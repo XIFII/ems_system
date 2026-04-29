@@ -1,0 +1,967 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  LayoutDashboard, Zap, ShieldAlert, Activity, Settings, 
+  Database, Bell, Wrench, RefreshCw, LogOut, Search,
+  Wifi, BatteryMedium, Clock, CheckCircle2, Radio,
+  AlertTriangle, Play, Square, Plus, Trash2, Edit3, Save,
+  Cloud, Cpu, ShieldCheck, GitBranch, ZapOff, Power, BarChart2,
+  CloudRain, TrendingUp, DownloadCloud, UploadCloud, ChevronRight,
+  LineChart, Sun, DollarSign, Sparkles, X, CalendarDays, Loader2
+} from 'lucide-react';
+
+const App = () => {
+  const [activeMenu, setActiveMenu] = useState('策略中心'); // 默认展示新菜单
+  const [architecture, setArchitecture] = useState('edge'); 
+  const [activeTab, setActiveTab] = useState('模式切换');
+  const [controlMode, setControlMode] = useState('local');
+  const [currentTime, setCurrentTime] = useState(new Date());
+  
+  // Edge States
+  const [strategyType, setStrategyType] = useState('monthly'); 
+  const [l3Strategy, setL3Strategy] = useState('peak_shaving'); 
+  
+  // Price Config States
+  const [priceConfigType, setPriceConfigType] = useState('monthly');
+
+  // Smart Plan Modal States
+  const [showSmartPlanModal, setShowSmartPlanModal] = useState(false);
+  const [smartPlanState, setSmartPlanState] = useState('idle'); // idle | calculating | result
+  const [selectedPlanDate, setSelectedPlanDate] = useState('2026-04-16');
+
+  useEffect(() => {
+    if (activeMenu === '策略中心') {
+      if (architecture === 'edge') {
+        setActiveTab('模式切换');
+      } else {
+        setActiveTab('参数同步');
+      }
+    }
+  }, [architecture, activeMenu]);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatDate = (date) => {
+    return `${date.getFullYear()}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getDate().toString().padStart(2,'0')}`;
+  };
+
+  const formatTime = (date) => {
+    return `${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}:${date.getSeconds().toString().padStart(2,'0')}`;
+  };
+
+  return (
+    <div className="min-h-screen bg-[#051210] text-slate-300 font-sans flex overflow-hidden selection:bg-[#00DFA2] selection:text-black">
+      {/* Sidebar */}
+      <div className="w-64 bg-[#081714] border-r border-[#153B34] flex flex-col justify-between shadow-2xl z-20 shrink-0">
+        <div>
+          <div className="h-16 flex items-center px-6 border-b border-[#153B34] mb-4">
+            <div className="w-8 h-8 bg-gradient-to-br from-[#00DFA2] to-[#10B981] rounded-lg flex items-center justify-center mr-3 shadow-[0_0_15px_rgba(0,223,162,0.4)]">
+              <Zap size={20} className="text-[#051210]" fill="currentColor" />
+            </div>
+            <div>
+              <h1 className="text-sm font-bold text-white tracking-wider">能源管理系统</h1>
+              <p className="text-[10px] text-[#00DFA2]">ENERGY MANAGEMENT</p>
+            </div>
+          </div>
+          <nav className="px-4 space-y-1">
+            <NavItem icon={<LayoutDashboard size={18} />} label="仪表板" active={activeMenu === '仪表板'} onClick={() => setActiveMenu('仪表板')} />
+            <NavItem icon={<Database size={18} />} label="设备管理" active={activeMenu === '设备管理'} onClick={() => setActiveMenu('设备管理')} />
+            <NavItem icon={<Activity size={18} />} label="运行监控" active={activeMenu === '运行监控'} onClick={() => setActiveMenu('运行监控')} />
+            <NavItem icon={<ShieldAlert size={18} />} label="告警中心" badge="3" active={activeMenu === '告警中心'} onClick={() => setActiveMenu('告警中心')} />
+            <div className="pt-4 pb-2">
+              <p className="text-xs text-slate-500 px-3 font-semibold">控制与调度</p>
+            </div>
+            <NavItem icon={<Zap size={18} />} label="策略中心" active={activeMenu === '策略中心'} onClick={() => setActiveMenu('策略中心')} />
+            {/* 新增电价配置菜单 */}
+            <NavItem icon={<TrendingUp size={18} />} label="电价配置" active={activeMenu === '电价配置'} onClick={() => setActiveMenu('电价配置')} />
+            <NavItem icon={<Settings size={18} />} label="算法模型" active={activeMenu === '算法模型'} onClick={() => setActiveMenu('算法模型')} />
+            <NavItem icon={<RefreshCw size={18} />} label="调控记录" active={activeMenu === '调控记录'} onClick={() => setActiveMenu('调控记录')} />
+          </nav>
+        </div>
+        <div className="p-4 border-t border-[#153B34]">
+          <NavItem icon={<LogOut size={18} />} label="退出登录" className="text-red-400 hover:text-red-300 hover:bg-red-950/30" />
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
+        {/* Top Header */}
+        <header className="h-14 bg-[#081714]/80 backdrop-blur-md border-b border-[#153B34] flex items-center justify-between px-6 z-10 shrink-0">
+          <div className="flex items-center text-sm font-medium text-slate-400">
+            <span className="flex items-center gap-2 px-3 py-1 bg-[#0C221E] rounded-md border border-[#153B34]">
+              <Database size={14} className="text-[#00DFA2]" />
+              微网聚合节点 A1 (边缘网关)
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-6 text-xs text-slate-400">
+            <div className="flex items-center space-x-2">
+              <span className="flex items-center gap-1.5 px-2.5 py-1 bg-[#10B981]/10 text-[#10B981] rounded-full border border-[#10B981]/30">
+                <span className="w-1.5 h-1.5 bg-[#10B981] rounded-full animate-pulse"></span>
+                云边链路正常
+              </span>
+              <span className="flex items-center gap-1.5"><UploadCloud size={14} className="text-blue-400"/> 上行: 1.2MB/s</span>
+              <span className="flex items-center gap-1.5"><DownloadCloud size={14} className="text-[#00DFA2]"/> 下行同步: 12ms前</span>
+            </div>
+            <div className="flex flex-col items-end leading-tight">
+              <span className="text-sm font-bold text-white">{formatTime(currentTime)}</span>
+              <span>{formatDate(currentTime)}</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Scrollable Content */}
+        <main className="flex-1 overflow-y-auto p-6 relative pb-20">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#00DFA2]/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+          {/* ========================================================= */}
+          {/* ===================== 电价配置模块 ======================= */}
+          {/* ========================================================= */}
+          {activeMenu === '电价配置' && (
+            <div className="relative z-10 animate-in fade-in slide-in-from-bottom-4">
+              {/* Title */}
+              <div className="flex justify-between items-start mb-6">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-gradient-to-br from-[#0C221E] to-[#081714] border border-[#153B34] rounded-xl shadow-lg">
+                    <TrendingUp size={28} className="text-blue-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white mb-1 tracking-wide">电价与市场配置中心</h2>
+                    <p className="text-sm text-slate-400">统一管理基础分时电价，并接收云平台下发的日前现货电价预测数据</p>
+                  </div>
+                </div>
+                <button className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-400 border border-blue-500/30 font-bold rounded-lg hover:bg-blue-500/20 transition-all text-sm shadow-[0_0_15px_rgba(59,130,246,0.15)]">
+                  <RefreshCw size={16} /> 强制同步云端电价
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* 1. 云平台现货电价预测同步区 */}
+                <div className="bg-[#0C221E] border border-blue-900/50 rounded-xl overflow-hidden shadow-lg">
+                  <div className="p-4 border-b border-blue-900/50 flex justify-between items-center bg-[#081714]/80">
+                    <div>
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        <Cloud size={16} className="text-blue-400"/> 
+                        云平台日前现货电价预测 (同步节点：节点A1所在省份)
+                      </h3>
+                      <p className="text-[10px] text-slate-500 mt-1">云端AI预测的未来24小时市场节点边际电价(LMP)，自动同步至边缘侧供L3算法参考。</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                       <span className="text-xs text-slate-400 flex items-center gap-1"><Clock size={12}/> 最后同步: 今日 08:15:22</span>
+                       <span className="px-2 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs rounded animate-pulse">实时同步中</span>
+                    </div>
+                  </div>
+                  <div className="p-5 h-56 relative bg-gradient-to-b from-[#081714] to-[#051210]">
+                    {/* SVG 模拟现货价格剧烈波动曲线 */}
+                    <svg viewBox="0 0 800 150" className="w-full h-full" preserveAspectRatio="none">
+                      {/* Grid */}
+                      <line x1="0" y1="25" x2="800" y2="25" stroke="#1e293b" strokeWidth="1" strokeDasharray="4" />
+                      <line x1="0" y1="75" x2="800" y2="75" stroke="#1e293b" strokeWidth="1" strokeDasharray="4" />
+                      <line x1="0" y1="125" x2="800" y2="125" stroke="#1e293b" strokeWidth="1" strokeDasharray="4" />
+                      
+                      {/* Y-axis Labels */}
+                      <text x="5" y="20" fill="#64748b" fontSize="10">1.2 (元)</text>
+                      <text x="5" y="70" fill="#64748b" fontSize="10">0.6</text>
+                      <text x="5" y="120" fill="#64748b" fontSize="10">0.0</text>
+
+                      {/* Volatile Spot Price Curve */}
+                      <path 
+                        d="M 50 120 L 100 115 L 150 90 L 200 130 L 250 80 L 300 40 L 350 20 L 400 45 L 450 100 L 500 110 L 550 85 L 600 50 L 650 30 L 700 80 L 750 115 L 800 120" 
+                        fill="none" stroke="#3B82F6" strokeWidth="2" 
+                      />
+                      
+                      {/* Area under curve */}
+                      <path 
+                        d="M 50 150 L 50 120 L 100 115 L 150 90 L 200 130 L 250 80 L 300 40 L 350 20 L 400 45 L 450 100 L 500 110 L 550 85 L 600 50 L 650 30 L 700 80 L 750 115 L 800 120 L 800 150 Z" 
+                        fill="rgba(59, 130, 246, 0.1)" stroke="none" 
+                      />
+
+                      {/* Highlight Peak Area */}
+                      <circle cx="350" cy="20" r="4" fill="#ef4444" className="animate-ping" />
+                      <circle cx="350" cy="20" r="4" fill="#ef4444" />
+                      <text x="360" y="20" fill="#ef4444" fontSize="10" fontWeight="bold">预测尖峰 (￥1.32)</text>
+                    </svg>
+                    <div className="absolute bottom-2 left-10 right-2 flex justify-between text-[10px] text-slate-500">
+                      <span>00:00</span><span>04:00</span><span>08:00</span><span>12:00</span><span>16:00</span><span>20:00</span><span>24:00</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. 基础分时电价库配置 */}
+                <div className="pt-2">
+                  <div className="flex justify-between items-end mb-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-white flex items-center gap-2"><DollarSign size={20} className="text-[#00DFA2]"/> 本地基础分时电价配置</h3>
+                      <p className="text-sm text-slate-400 mt-1">设置固定的基础电价结构，无现货市场接入时，边缘网关将依此计算收益。</p>
+                    </div>
+                    <div className="flex bg-[#081714] p-1 border border-[#153B34] rounded-lg">
+                      <button onClick={() => setPriceConfigType('monthly')} className={`px-4 py-1.5 text-xs rounded transition-all ${priceConfigType === 'monthly' ? 'bg-[#0C221E] text-[#00DFA2] border border-[#153B34] shadow-sm' : 'text-slate-500'}`}>按月配置</button>
+                      <button onClick={() => setPriceConfigType('daily')} className={`px-4 py-1.5 text-xs rounded transition-all ${priceConfigType === 'daily' ? 'bg-[#0C221E] text-[#00DFA2] border border-[#153B34] shadow-sm' : 'text-slate-500'}`}>按日配置</button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-12 gap-6">
+                    {/* 月份/日期选择器 */}
+                    <div className="col-span-3">
+                      <div className="bg-[#0C221E] border border-[#153B34] rounded-xl p-4 shadow-lg h-full">
+                        {priceConfigType === 'monthly' ? (
+                          <div className="animate-in fade-in">
+                            <h4 className="text-white font-bold text-sm mb-4">选择适用月份</h4>
+                            <div className="grid grid-cols-3 gap-2">
+                              {[1,2,3,4,5,6,7,8,9,10,11,12].map(m => (
+                                <div key={m} className={`py-2 text-center rounded border text-xs cursor-pointer transition-colors ${[7, 8, 9].includes(m) ? 'bg-[#10B981]/20 border-[#00DFA2] text-[#00DFA2] font-bold' : 'bg-[#081714] border-[#153B34] text-slate-500 hover:border-[#153B34]/80'}`}>
+                                  {m}月
+                                </div>
+                              ))}
+                            </div>
+                            <p className="text-[10px] text-slate-500 mt-4 leading-relaxed">
+                              提示：夏季(7-9月)存在尖峰电价，可将其组合为一个配置组下发保存。
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="animate-in fade-in">
+                            <div className="flex justify-between items-center mb-4">
+                              <h4 className="text-white font-bold text-sm">选择适用日期</h4>
+                            </div>
+                            <div className="flex items-center justify-between gap-2 mb-3">
+                               <button className="text-slate-500 hover:text-white">&lt;</button>
+                               <span className="text-sm font-bold text-[#00DFA2]">2026年 4月</span>
+                               <button className="text-slate-500 hover:text-white">&gt;</button>
+                            </div>
+                            <div className="grid grid-cols-7 gap-1 mb-1">
+                              {['日', '一', '二', '三', '四', '五', '六'].map(d => (
+                                <div key={d} className="text-center text-[10px] text-slate-500">{d}</div>
+                              ))}
+                            </div>
+                            <div className="grid grid-cols-7 gap-1">
+                              <div/><div/><div/> {/* Offset */}
+                              {Array.from({length: 30}).map((_, i) => {
+                                const day = i + 1;
+                                const isWeekend = (i + 4) % 7 === 0 || (i + 4) % 7 === 6; // 4月1日是周三
+                                const isSelected = isWeekend; // 模拟选中周末
+                                return (
+                                  <div key={day} className={`py-1 text-center rounded border text-[10px] cursor-pointer transition-colors ${isSelected ? 'bg-[#10B981]/20 border-[#00DFA2] text-[#00DFA2] font-bold shadow-[0_0_10px_rgba(0,223,162,0.2)]' : 'bg-[#081714] border-[#153B34] text-slate-500 hover:border-[#153B34]/80'}`}>
+                                    {day}
+                                  </div>
+                                )
+                              })}
+                            </div>
+                            <p className="text-[10px] text-slate-500 mt-4 leading-relaxed">
+                              提示：可针对国家法定节假日或特殊交易日，精准应用单日特殊的电价策略模板。
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 电价表配置 */}
+                    <div className="col-span-9">
+                      <div className="bg-[#0C221E] border border-[#153B34] rounded-xl overflow-hidden shadow-lg h-full flex flex-col">
+                        <div className="p-3 border-b border-[#153B34] flex justify-between items-center bg-[#081714]/50">
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm font-bold text-white flex items-center gap-2">关联电价模板：</span>
+                            <select className="bg-[#0C221E] border border-[#00DFA2]/50 text-[#00DFA2] px-3 py-1 rounded text-xs outline-none cursor-pointer focus:shadow-[0_0_10px_rgba(0,223,162,0.2)] transition-all">
+                              <option>2026年夏季工商业电价模板 (当前)</option>
+                              <option>周日及法定节假日特殊电价</option>
+                              <option>冬季标准电价模板</option>
+                            </select>
+                          </div>
+                          <div className="flex gap-2">
+                             <button className="flex items-center gap-1 text-xs bg-[#153B34] text-slate-300 px-3 py-1.5 rounded border border-[#153B34] hover:text-white"><Plus size={14} /> 增加时段</button>
+                             <button className="flex items-center gap-1 text-xs bg-gradient-to-r from-[#00DFA2] to-[#10B981] text-[#051210] font-bold px-4 py-1.5 rounded hover:brightness-110 transition-all"><Save size={14} /> 组网保存并下发</button>
+                          </div>
+                        </div>
+                        <div className="flex-1 p-0">
+                          <table className="w-full text-xs text-left">
+                            <thead className="text-slate-500 bg-[#081714] uppercase">
+                              <tr>
+                                <th className="px-4 py-3 border-b border-[#153B34]">开始时间</th>
+                                <th className="px-4 py-3 border-b border-[#153B34]">结束时间</th>
+                                <th className="px-4 py-3 border-b border-[#153B34]">电价类型</th>
+                                <th className="px-4 py-3 border-b border-[#153B34]">单价 (元/kWh)</th>
+                                <th className="px-4 py-3 border-b border-[#153B34] text-right">操作</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-[#153B34]">
+                              <PriceRow start="00:00" end="08:00" type="谷段" price="0.3200" colorClass="text-blue-400 bg-blue-400/10" />
+                              <PriceRow start="08:00" end="11:00" type="高峰" price="1.1500" colorClass="text-amber-500 bg-amber-500/10" />
+                              <PriceRow start="11:00" end="13:00" type="平段" price="0.6800" colorClass="text-[#00DFA2] bg-[#00DFA2]/10" />
+                              <PriceRow start="13:00" end="15:00" type="尖峰" price="1.4500" colorClass="text-red-400 bg-red-400/10" />
+                              <PriceRow start="15:00" end="22:00" type="高峰" price="1.1500" colorClass="text-amber-500 bg-amber-500/10" />
+                              <PriceRow start="22:00" end="24:00" type="平段" price="0.6800" colorClass="text-[#00DFA2] bg-[#00DFA2]/10" />
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* ===================== 策略中心模块 ======================= */}
+          {/* ========================================================= */}
+          {activeMenu === '策略中心' && (
+            <>
+              {/* Title & Cloud/Edge Switcher */}
+              <div className="flex justify-between items-start mb-6 relative z-10 animate-in fade-in">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-gradient-to-br from-[#0C221E] to-[#081714] border border-[#153B34] rounded-xl shadow-lg">
+                    <Zap size={28} className="text-[#00DFA2]" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white mb-1 tracking-wide">策略控制中心</h2>
+                    <p className="text-sm text-slate-400">基于云边协同架构，配置边缘侧执行逻辑与云端辅助算力</p>
+                  </div>
+                </div>
+
+                <div className="flex bg-[#051210] p-1 border border-[#153B34] rounded-xl shadow-inner">
+                  <button 
+                    onClick={() => setArchitecture('edge')}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${
+                      architecture === 'edge' ? 'bg-gradient-to-r from-[#10B981]/20 to-[#0C221E] text-[#00DFA2] border border-[#00DFA2]/50 shadow-[0_0_15px_rgba(0,223,162,0.15)]' : 'text-slate-500 hover:text-slate-300 border border-transparent'
+                    }`}
+                  >
+                    <Cpu size={18} />
+                    边缘侧执行级 (Edge)
+                  </button>
+                  <button 
+                    onClick={() => setArchitecture('cloud')}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${
+                      architecture === 'cloud' ? 'bg-gradient-to-r from-[#3B82F6]/20 to-[#0C221E] text-[#3B82F6] border border-[#3B82F6]/50 shadow-[0_0_15px_rgba(59,130,246,0.15)]' : 'text-slate-500 hover:text-slate-300 border border-transparent'
+                    }`}
+                  >
+                    <Cloud size={18} />
+                    云端辅助级 (Cloud)
+                  </button>
+                </div>
+              </div>
+
+              {/* 动态 Tabs */}
+              <div className="flex space-x-1 mb-6 bg-[#0C221E] p-1 rounded-lg border border-[#153B34] inline-flex relative z-10 transition-all animate-in fade-in">
+                {architecture === 'edge' ? (
+                  <>
+                    <TabButton active={activeTab === '模式切换'} onClick={() => setActiveTab('模式切换')} icon={<Radio size={16}/>} label="运行模式 (L2)" />
+                    <TabButton active={activeTab === '硬性约束'} onClick={() => setActiveTab('硬性约束')} icon={<ShieldCheck size={16}/>} label="硬性约束 (L1)" />
+                    <TabButton active={activeTab === '本地智能'} onClick={() => setActiveTab('本地智能')} icon={<Cpu size={16}/>} label="智能与调度 (L3)" />
+                  </>
+                ) : (
+                  <>
+                    <TabButton active={activeTab === '参数同步'} onClick={() => setActiveTab('参数同步')} icon={<RefreshCw size={16}/>} label="全局参数同步" theme="blue" />
+                    <TabButton active={activeTab === '大模型辅助'} onClick={() => setActiveTab('大模型辅助')} icon={<BarChart2 size={16}/>} label="大模型预测服务" theme="blue" />
+                    <TabButton active={activeTab === '算法引擎'} onClick={() => setActiveTab('算法引擎')} icon={<GitBranch size={16}/>} label="算法引擎" theme="blue" />
+                  </>
+                )}
+              </div>
+
+              <div className="relative z-10 min-h-[500px]">
+                {/* Edge 内容区 - 与之前保持一致 */}
+                {architecture === 'edge' && activeTab === '模式切换' && (
+                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      {/* 模式 1: 孤立/断网模式 */}
+                      <div onClick={() => setControlMode('local')} className={`relative overflow-hidden cursor-pointer rounded-2xl transition-all border-2 p-6 flex flex-col items-center text-center ${controlMode === 'local' ? 'bg-gradient-to-br from-[#10B981]/20 to-[#0C221E] border-[#00DFA2] shadow-[0_0_20px_rgba(0,223,162,0.15)]' : 'bg-[#081714] border-[#153B34] hover:border-[#153B34]/80 opacity-60'}`}>
+                        {controlMode === 'local' && <div className="absolute top-3 right-3 text-[#00DFA2]"><CheckCircle2 size={24} /></div>}
+                        <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 transition-colors ${controlMode === 'local' ? 'bg-[#00DFA2]/20 text-[#00DFA2]' : 'bg-[#153B34] text-slate-400'}`}><ZapOff size={28} /></div>
+                        <h4 className={`text-lg font-bold mb-2 ${controlMode === 'local' ? 'text-white' : 'text-slate-300'}`}>孤立/断网模式</h4>
+                        <p className="text-xs text-slate-400 mb-4 h-12">拒绝任何外部指令。仅依靠边缘侧本地保存的最后一次策略独立运行。</p>
+                      </div>
+
+                      {/* 模式 2: 云边协同模式 */}
+                      <div onClick={() => setControlMode('cloud_edge')} className={`relative overflow-hidden cursor-pointer rounded-2xl transition-all border-2 p-6 flex flex-col items-center text-center ${controlMode === 'cloud_edge' ? 'bg-gradient-to-br from-[#10B981]/20 to-[#0C221E] border-[#00DFA2] shadow-[0_0_20px_rgba(0,223,162,0.15)]' : 'bg-[#081714] border-[#153B34] hover:border-[#153B34]/80 opacity-60'}`}>
+                        {controlMode === 'cloud_edge' && <div className="absolute top-3 right-3 text-[#00DFA2]"><CheckCircle2 size={24} /></div>}
+                        <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 transition-colors ${controlMode === 'cloud_edge' ? 'bg-[#00DFA2]/20 text-[#00DFA2]' : 'bg-[#153B34] text-slate-400'}`}><RefreshCw size={28} /></div>
+                        <h4 className={`text-lg font-bold mb-2 ${controlMode === 'cloud_edge' ? 'text-white' : 'text-slate-300'}`}>云边协同模式 (当前)</h4>
+                        <p className="text-xs text-slate-400 mb-4 h-12">接收云端的大气象数据和预测模型权重更新，在边缘侧进行高精度的 L3 智能寻优。</p>
+                      </div>
+
+                      {/* 模式 3: 远方模式 */}
+                      <div onClick={() => setControlMode('remote')} className={`relative overflow-hidden cursor-pointer rounded-2xl transition-all border-2 p-6 flex flex-col items-center text-center ${controlMode === 'remote' ? 'bg-gradient-to-br from-[#3B82F6]/20 to-[#0C221E] border-[#3B82F6] shadow-[0_0_20px_rgba(59,130,246,0.15)]' : 'bg-[#081714] border-[#153B34] hover:border-[#153B34]/80 opacity-60'}`}>
+                        {controlMode === 'remote' && <div className="absolute top-3 right-3 text-[#3B82F6]"><CheckCircle2 size={24} /></div>}
+                        <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 transition-colors ${controlMode === 'remote' ? 'bg-[#3B82F6]/20 text-[#3B82F6]' : 'bg-[#153B34] text-slate-400'}`}><Radio size={28} /></div>
+                        <h4 className={`text-lg font-bold mb-2 ${controlMode === 'remote' ? 'text-white' : 'text-slate-300'}`}>远方模式 (上级调度)</h4>
+                        <p className="text-xs text-slate-400 mb-4 h-12">边缘智能挂起。强制执行上级电网或虚拟电厂(VPP)下发的绝对功率指令。</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {architecture === 'edge' && activeTab === '硬性约束' && (
+                  <div className="grid grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4">
+                    <div className="bg-[#0C221E] border border-[#153B34] rounded-xl p-6 shadow-lg">
+                      <div className="flex items-center gap-3 mb-6 border-b border-[#153B34] pb-4">
+                        <div className="p-2 bg-red-500/10 rounded-lg"><ZapOff size={20} className="text-red-400"/></div>
+                        <div><h4 className="text-white font-bold">防逆流保护 (边缘毫秒级)</h4><p className="text-xs text-slate-400">防止向大电网倒送电</p></div>
+                      </div>
+                      <div className="space-y-4">
+                        <FormInput label="限制值 (kW)" defaultValue={0} hint="建议为0" />
+                        <FormInput label="控制死区 (kW)" defaultValue={2} hint="防止频繁调节" />
+                        <div>
+                          <label className="block text-xs text-slate-400 mb-1">优先级动作序列</label>
+                          <select className="w-full bg-[#081714] border border-[#153B34] rounded text-white px-3 py-2 text-sm focus:outline-none">
+                            <option>1.强制储能充电 → 2.降储能放电 → 3.切光伏</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-[#0C221E] border border-[#153B34] rounded-xl p-6 shadow-lg">
+                      <div className="flex items-center gap-3 mb-6 border-b border-[#153B34] pb-4">
+                        <div className="p-2 bg-[#00DFA2]/10 rounded-lg"><Activity size={20} className="text-[#00DFA2]"/></div>
+                        <div><h4 className="text-white font-bold">需量控制 (边缘秒级)</h4><p className="text-xs text-slate-400">防超需量罚款</p></div>
+                      </div>
+                      <div className="space-y-4">
+                        <FormInput label="申报需量红线 (kW)" defaultValue={1000} hint="容量95%" />
+                        <FormInput label="安全预警阈值 (kW)" defaultValue={950} hint="触发调节" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {architecture === 'edge' && activeTab === '本地智能' && (
+                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                    {/* L3 策略选择 */}
+                    <div className="bg-[#0C221E] border border-[#153B34] rounded-xl p-6 shadow-lg">
+                      <div className="flex justify-between items-start mb-6">
+                        <div>
+                          <h4 className="text-white font-bold text-lg flex items-center gap-2"><Cpu size={20} className="text-[#00DFA2]"/> L3 调度与智能优化引擎</h4>
+                          <p className="text-xs text-slate-400 mt-1">选择边缘网关的主调度策略。支持传统的时段控制，或基于云端协同的高级智能寻优。</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-4">
+                        <label className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer relative overflow-hidden transition-all ${l3Strategy === 'peak_shaving' ? 'bg-[#081714] border-[#00DFA2]/50 shadow-[0_0_15px_rgba(0,223,162,0.1)]' : 'bg-[#081714] border-[#153B34] hover:border-[#153B34]/80'}`}>
+                          {l3Strategy === 'peak_shaving' && <div className="absolute top-0 left-0 w-1 h-full bg-[#00DFA2]"></div>}
+                          <input type="radio" checked={l3Strategy === 'peak_shaving'} onChange={() => setL3Strategy('peak_shaving')} className="mt-1 accent-[#00DFA2]" />
+                          <div>
+                            <p className="text-white font-bold text-sm mb-1">常规削峰填谷</p>
+                            <p className="text-[10px] text-slate-400 leading-tight">基于预设的固定时段表执行充放电。不依赖云端预测，断网时最为稳定可靠。</p>
+                          </div>
+                        </label>
+                        <label className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer relative overflow-hidden transition-all ${l3Strategy === 'economic' ? 'bg-[#081714] border-[#00DFA2]/50 shadow-[0_0_15px_rgba(0,223,162,0.1)]' : 'bg-[#081714] border-[#153B34] hover:border-[#153B34]/80'}`}>
+                          {l3Strategy === 'economic' && <div className="absolute top-0 left-0 w-1 h-full bg-[#00DFA2]"></div>}
+                          <input type="radio" checked={l3Strategy === 'economic'} onChange={() => setL3Strategy('economic')} className="mt-1 accent-[#00DFA2]" />
+                          <div>
+                            <p className="text-white font-bold text-sm mb-1">边缘经济调度 (AI寻优)</p>
+                            <p className="text-[10px] text-slate-400 leading-tight">优先保障不超需量，在分时电价窗口内结合预测模型自动搜寻最佳充放电时机。</p>
+                          </div>
+                        </label>
+                        <label className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer relative overflow-hidden transition-all ${l3Strategy === 'green' ? 'bg-[#081714] border-[#00DFA2]/50 shadow-[0_0_15px_rgba(0,223,162,0.1)]' : 'bg-[#081714] border-[#153B34] hover:border-[#153B34]/80'}`}>
+                          {l3Strategy === 'green' && <div className="absolute top-0 left-0 w-1 h-full bg-[#00DFA2]"></div>}
+                          <input type="radio" checked={l3Strategy === 'green'} onChange={() => setL3Strategy('green')} className="mt-1 accent-[#00DFA2]" />
+                          <div>
+                            <p className="text-white font-bold text-sm mb-1">绿电消纳优先</p>
+                            <p className="text-[10px] text-slate-400 leading-tight">跟随光伏实时出力曲线，最大化微网内部储能吸收率，减少并网倒送与弃光。</p>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* L3: 削峰填谷详情 */}
+                    {l3Strategy === 'peak_shaving' && (
+                      <div className="grid grid-cols-12 gap-6 animate-in fade-in slide-in-from-bottom-4">
+                        <div className="col-span-7 space-y-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-sm font-bold text-[#00DFA2] flex items-center gap-2"><Clock size={16}/> 固定时段参数配置</h3>
+                            <div className="flex items-center gap-3">
+                              <button 
+                                onClick={() => { setShowSmartPlanModal(true); setSmartPlanState('idle'); }} 
+                                className="flex items-center gap-1.5 text-xs bg-gradient-to-r from-amber-500 to-orange-500 text-[#051210] px-3 py-1.5 rounded-lg shadow-[0_0_10px_rgba(245,158,11,0.3)] hover:brightness-110 font-bold transition-all"
+                              >
+                                <Sparkles size={14} /> 智能规划
+                              </button>
+                              <div className="flex bg-[#081714] p-1 border border-[#153B34] rounded-lg">
+                                <button onClick={() => setStrategyType('monthly')} className={`px-4 py-1 text-xs rounded transition-all ${strategyType === 'monthly' ? 'bg-[#0C221E] text-white border border-[#153B34] shadow-sm' : 'text-slate-500'}`}>按月配置</button>
+                                <button onClick={() => setStrategyType('daily')} className={`px-4 py-1 text-xs rounded transition-all ${strategyType === 'daily' ? 'bg-[#0C221E] text-white border border-[#153B34] shadow-sm' : 'text-slate-500'}`}>按日配置</button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {strategyType === 'monthly' ? (
+                            <div className="bg-[#0C221E] border border-[#153B34] rounded-xl p-5 shadow-lg animate-in fade-in">
+                              <div className="flex justify-between items-center mb-4">
+                                <h4 className="text-white font-bold text-sm">选择生效月份 (当前编辑组)</h4>
+                              </div>
+                              <div className="grid grid-cols-6 gap-3">
+                                {[1,2,3,4,5,6,7,8,9,10,11,12].map(m => (
+                                  <div key={m} className={`py-1.5 text-center rounded border text-xs cursor-pointer transition-colors ${[1, 7, 8, 12].includes(m) ? 'bg-[#10B981]/20 border-[#00DFA2] text-[#00DFA2] font-bold' : 'bg-[#081714] border-[#153B34] text-slate-500 hover:border-[#153B34]/80'}`}>
+                                    {m}月
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="bg-[#0C221E] border border-[#153B34] rounded-xl p-5 shadow-lg animate-in fade-in">
+                              <div className="flex justify-between items-center mb-4">
+                                <h4 className="text-white font-bold text-sm">选择生效日期</h4>
+                                <div className="flex items-center gap-4">
+                                   <button className="text-slate-500 hover:text-white">&lt;</button>
+                                   <span className="text-sm font-bold text-[#00DFA2] w-20 text-center">2026年 4月</span>
+                                   <button className="text-slate-500 hover:text-white">&gt;</button>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-7 gap-2 mb-2">
+                                {['日', '一', '二', '三', '四', '五', '六'].map(d => (
+                                  <div key={d} className="text-center text-[10px] text-slate-500">{d}</div>
+                                ))}
+                              </div>
+                              <div className="grid grid-cols-7 gap-2">
+                                <div/><div/><div/>
+                                {Array.from({length: 30}).map((_, i) => {
+                                  const day = i + 1;
+                                  const isSelected = [15, 16, 17].includes(day); 
+                                  return (
+                                    <div key={day} className={`py-1.5 text-center rounded border text-xs cursor-pointer transition-colors ${isSelected ? 'bg-[#10B981]/20 border-[#00DFA2] text-[#00DFA2] font-bold shadow-[0_0_10px_rgba(0,223,162,0.2)]' : 'bg-[#081714] border-[#153B34] text-slate-500 hover:border-[#153B34]/80'}`}>
+                                      {day}
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="bg-[#0C221E] border border-[#153B34] rounded-xl overflow-hidden shadow-lg">
+                            <div className="p-3 border-b border-[#153B34] flex justify-between items-center bg-[#081714]/50">
+                              <div className="flex items-center gap-3">
+                                <span className="text-sm font-bold text-white flex items-center gap-2">关联策略模板：</span>
+                                <select className="bg-[#0C221E] border border-[#00DFA2]/50 text-[#00DFA2] px-3 py-1 rounded text-xs outline-none cursor-pointer">
+                                  <option>夏季激进两充两放模板</option>
+                                  <option>冬季平稳一充一放模板</option>
+                                </select>
+                              </div>
+                            </div>
+                            <table className="w-full text-xs text-left">
+                              <thead className="text-slate-500 bg-[#081714] uppercase">
+                                <tr><th className="px-4 py-2">开始</th><th className="px-4 py-2">结束</th><th className="px-4 py-2">功率(kW)</th><th className="px-4 py-2">动作</th><th className="px-4 py-2 text-right">操作</th></tr>
+                              </thead>
+                              <tbody className="divide-y divide-[#153B34]">
+                                <TableRow start="00:00" end="08:00" power="35.0" status="充电" type="charge" />
+                                <TableRow start="08:00" end="11:00" power="-80.0" status="放电" type="discharge" />
+                                <TableRow start="11:00" end="13:00" power="80.0" status="充电" type="charge" />
+                                <TableRow start="13:00" end="17:00" power="0.0" status="静置" type="idle" />
+                                <TableRow start="17:00" end="21:00" power="-80.0" status="放电" type="discharge" />
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        <div className="col-span-5 space-y-4">
+                          <div className="bg-[#0C221E] border border-[#153B34] rounded-xl p-4 shadow-lg h-full flex flex-col">
+                             <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2"><LineChart size={16} className="text-[#00DFA2]"/> 策略曲线预览</h4>
+                             <div className="flex-1 bg-[#081714] rounded-lg border border-[#153B34] relative p-2 overflow-hidden flex flex-col">
+                                <div className="flex-1 relative w-full h-full mt-2">
+                                   <svg viewBox="0 0 400 150" className="w-full h-full" preserveAspectRatio="none">
+                                     <line x1="0" y1="25" x2="400" y2="25" stroke="#153B34" strokeWidth="1" strokeDasharray="4" />
+                                     <line x1="0" y1="75" x2="400" y2="75" stroke="#153B34" strokeWidth="1" /> 
+                                     <line x1="0" y1="125" x2="400" y2="125" stroke="#153B34" strokeWidth="1" strokeDasharray="4" />
+                                     <text x="5" y="20" fill="#64748b" fontSize="10">80kW (充)</text>
+                                     <text x="5" y="70" fill="#64748b" fontSize="10">0</text>
+                                     <text x="5" y="140" fill="#64748b" fontSize="10">-80kW (放)</text>
+                                     <polyline points="0,50 133,50 133,125 183,125 183,25 216,25 216,75 283,75 283,125 350,125 350,75 400,75" fill="none" stroke="#00DFA2" strokeWidth="2" />
+                                     <polygon points="0,75 0,50 133,50 133,75" fill="rgba(0, 223, 162, 0.2)" />
+                                     <polygon points="133,75 133,125 183,125 183,75" fill="rgba(251, 191, 36, 0.2)" />
+                                     <polygon points="183,75 183,25 216,25 216,75" fill="rgba(0, 223, 162, 0.2)" />
+                                     <polygon points="283,75 283,125 350,125 350,75" fill="rgba(251, 191, 36, 0.2)" />
+                                   </svg>
+                                </div>
+                                <div className="flex justify-between text-[10px] text-slate-500 px-1 mt-1">
+                                  <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span>
+                                </div>
+                             </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* L3: 经济调度 AI */}
+                    {l3Strategy === 'economic' && (
+                      <div className="grid grid-cols-12 gap-6 animate-in fade-in slide-in-from-bottom-4">
+                        <div className="col-span-4">
+                          <div className="bg-[#081714] border border-[#153B34] rounded-xl p-5 shadow-lg h-full">
+                            <h5 className="text-sm font-bold text-white mb-4 flex items-center gap-2"><Cpu size={16} className="text-[#00DFA2]"/> AI 寻优依赖状态</h5>
+                            <div className="space-y-3 mb-6">
+                              <SyncStatusItem label="本地负载预测 (LSTM)" status="运行中" time="实时" />
+                              <SyncStatusItem label="从配置中心同步电价" status="已加载" time="00:00" />
+                              <SyncStatusItem label="云端辅助策略参考" status="已融合" time="15m前" />
+                            </div>
+                            <button className="w-full py-2 bg-[#00DFA2] text-[#051210] font-bold rounded hover:brightness-110 text-sm transition-all">重新生成并应用曲线</button>
+                          </div>
+                        </div>
+                        <div className="col-span-8">
+                          <div className="bg-[#0C221E] border border-[#153B34] rounded-xl p-5 shadow-lg h-full">
+                             <div className="flex justify-between items-center mb-4">
+                               <h4 className="text-sm font-bold text-white flex items-center gap-2"><LineChart size={16} className="text-[#00DFA2]"/> 经济调度预测曲线 (未来24h)</h4>
+                               <div className="flex gap-3 text-[10px]">
+                                  <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-blue-500"></div> 电价走势</span>
+                                  <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[#00DFA2]"></div> 预测SOC</span>
+                               </div>
+                             </div>
+                             <div className="h-48 bg-[#081714] rounded-lg border border-[#153B34] p-2 relative">
+                                <svg viewBox="0 0 600 150" className="w-full h-full" preserveAspectRatio="none">
+                                   <line x1="0" y1="130" x2="600" y2="130" stroke="#153B34" strokeWidth="1" />
+                                   <path d="M 0 130 L 0 110 L 150 110 L 150 40 L 250 40 L 250 110 L 350 110 L 350 30 L 450 30 L 450 110 L 600 110 L 600 130 Z" fill="rgba(59, 130, 246, 0.1)" stroke="#3B82F6" strokeWidth="1" strokeDasharray="4"/>
+                                   <path d="M 0 100 C 50 100, 100 20, 150 20 C 200 20, 200 120, 250 120 C 300 120, 300 20, 350 20 C 400 20, 400 120, 450 120 C 500 120, 550 100, 600 100" fill="none" stroke="#00DFA2" strokeWidth="2" />
+                                </svg>
+                             </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* L3: 绿电消纳 (PV) */}
+                    {l3Strategy === 'green' && (
+                      <div className="grid grid-cols-12 gap-6 animate-in fade-in slide-in-from-bottom-4">
+                        <div className="col-span-4">
+                          <div className="bg-[#081714] border border-[#153B34] rounded-xl p-5 shadow-lg h-full">
+                            <h5 className="text-sm font-bold text-white mb-4 flex items-center gap-2"><Sun size={16} className="text-amber-400"/> 光储协同计算状态</h5>
+                            <div className="space-y-3 mb-6">
+                              <SyncStatusItem label="辐照度预测" status="晴天" time="实时" />
+                              <SyncStatusItem label="光伏功率预测 (CV)" status="运行中" time="实时" />
+                              <SyncStatusItem label="防逆流动态约束" status="生效中" time="最高级" />
+                            </div>
+                            <div className="text-[10px] text-slate-500 bg-[#051210] p-2 rounded border border-[#153B34]">策略逻辑：预判中午光伏溢出，提前腾出储能空间；光伏高峰时强制储能充电，减少弃光。</div>
+                          </div>
+                        </div>
+                        <div className="col-span-8">
+                          <div className="bg-[#0C221E] border border-[#153B34] rounded-xl p-5 shadow-lg h-full">
+                             <div className="flex justify-between items-center mb-4">
+                               <h4 className="text-sm font-bold text-white flex items-center gap-2"><LineChart size={16} className="text-[#00DFA2]"/> 光储协同预测曲线</h4>
+                               <div className="flex gap-3 text-[10px]">
+                                  <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-amber-400"></div> 光伏预测</span>
+                                  <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[#00DFA2]"></div> 储能动作</span>
+                               </div>
+                             </div>
+                             <div className="h-48 bg-[#081714] rounded-lg border border-[#153B34] p-2 relative">
+                                <svg viewBox="0 0 600 150" className="w-full h-full" preserveAspectRatio="none">
+                                   <line x1="0" y1="100" x2="600" y2="100" stroke="#153B34" strokeWidth="1" />
+                                   <path d="M 150 100 Q 300 -50, 450 100 Z" fill="rgba(251, 191, 36, 0.15)" stroke="#FBBF24" strokeWidth="1" strokeDasharray="4" />
+                                   <path d="M 0 50 L 150 100 C 250 100, 300 20, 450 20 L 600 20" fill="none" stroke="#00DFA2" strokeWidth="2" />
+                                </svg>
+                             </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Cloud 内容区 */}
+                {architecture === 'cloud' && activeTab === '算法引擎' && (
+                  <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><GitBranch size={20} className="text-blue-400"/> 云端算法迭代与影子跑分</h3>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="bg-[#081714] border border-[#153B34] rounded-xl p-6 relative">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-[#10B981] rounded-t-xl"></div>
+                        <span className="bg-[#10B981]/20 text-[#10B981] text-xs px-2 py-1 rounded border border-[#10B981]/30 font-mono mb-4 inline-block">生产版本 (ACTIVE)</span>
+                        <h5 className="text-xl font-bold text-white mb-2">V2.1.0 强化学习基础模型</h5>
+                        <div className="bg-[#051210] p-4 rounded border border-[#153B34] mt-4">
+                          <div className="flex justify-between text-sm mb-2"><span className="text-slate-400">云端验证评估分</span><span className="text-white font-bold">85.4 / 100</span></div>
+                          <div className="w-full bg-[#153B34] rounded-full h-1.5"><div className="bg-[#10B981] h-1.5 rounded-full" style={{width: '85%'}}></div></div>
+                        </div>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-[#0C221E] to-[#081714] border border-blue-500/50 rounded-xl p-6 relative shadow-[0_0_20px_rgba(59,130,246,0.1)]">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-blue-500 rounded-t-xl"></div>
+                        <span className="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded border border-blue-500/30 font-mono mb-4 flex items-center gap-2 w-max">
+                          <Activity size={12} className="animate-pulse"/> 影子训练中 (SHADOW)
+                        </span>
+                        <h5 className="text-xl font-bold text-white mb-2">V2.2.0 Transformer 增强模型</h5>
+                        <div className="bg-[#051210] p-4 rounded border border-[#153B34] mt-4 mb-4">
+                          <div className="flex justify-between text-sm mb-2"><span className="text-blue-400">虚拟跑分 (+8%)</span><span className="text-white font-bold">92.1 / 100</span></div>
+                          <div className="w-full bg-[#153B34] rounded-full h-1.5"><div className="bg-blue-500 h-1.5 rounded-full" style={{width: '92%'}}></div></div>
+                        </div>
+                        <button className="w-full py-2 bg-[#153B34] text-blue-400 border border-blue-500/30 hover:bg-blue-500 hover:text-white font-bold rounded transition-all text-sm flex items-center justify-center gap-2">
+                          <DownloadCloud size={16}/> 下发模型参数更新至边缘 (OTA)
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {architecture === 'cloud' && activeTab === '参数同步' && (<div className="text-slate-500 flex justify-center py-20">全局参数同步模块</div>)}
+                {architecture === 'cloud' && activeTab === '大模型辅助' && (<div className="text-slate-500 flex justify-center py-20">大模型辅助模块</div>)}
+
+              </div>
+            </>
+          )}
+
+          {/* ========================================================= */}
+          {/* ===================== 智能规划弹窗 ======================= */}
+          {/* ========================================================= */}
+          {showSmartPlanModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowSmartPlanModal(false)}></div>
+              
+              <div className="relative bg-gradient-to-br from-[#0C221E] to-[#081714] border border-[#00DFA2]/50 rounded-2xl w-[800px] shadow-[0_0_30px_rgba(0,223,162,0.15)] overflow-hidden animate-in zoom-in-95 duration-300">
+                
+                {/* Modal Header */}
+                <div className="flex justify-between items-center px-6 py-4 border-b border-[#153B34] bg-[#051210]/50">
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <Sparkles size={20} className="text-amber-400" />
+                    智能收益规划向导
+                  </h3>
+                  <button onClick={() => setShowSmartPlanModal(false)} className="text-slate-400 hover:text-white transition-colors">
+                    <X size={20} />
+                  </button>
+                </div>
+
+                {/* Modal Body */}
+                <div className="p-6">
+                  {smartPlanState === 'idle' && (
+                    <div className="flex flex-col items-center justify-center py-10 space-y-6">
+                      <div className="text-center space-y-2">
+                        <CalendarDays size={48} className="text-[#00DFA2] mx-auto opacity-80" />
+                        <p className="text-lg font-bold text-white">选择要规划的日期</p>
+                        <p className="text-sm text-slate-400">系统将自动提取当日电价预测，计算出收益最大化的充放电策略。</p>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 bg-[#081714] border border-[#153B34] p-3 rounded-xl">
+                         <span className="text-sm text-slate-400">规划日期：</span>
+                         <input 
+                           type="date" 
+                           value={selectedPlanDate} 
+                           onChange={(e) => setSelectedPlanDate(e.target.value)}
+                           className="bg-transparent text-[#00DFA2] outline-none font-mono text-lg font-bold cursor-pointer [color-scheme:dark]" 
+                         />
+                      </div>
+
+                      <button 
+                        onClick={() => {
+                          setSmartPlanState('calculating');
+                          setTimeout(() => setSmartPlanState('result'), 2500);
+                        }}
+                        className="px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold rounded-xl shadow-[0_0_15px_rgba(245,158,11,0.3)] hover:brightness-110 flex items-center gap-2"
+                      >
+                        获取电价并开始计算
+                      </button>
+                    </div>
+                  )}
+
+                  {smartPlanState === 'calculating' && (
+                    <div className="flex flex-col items-center justify-center py-20 space-y-6">
+                      <Loader2 size={48} className="text-[#00DFA2] animate-spin" />
+                      <div className="text-center space-y-2">
+                        <p className="text-lg font-bold text-white">正在执行经济调度寻优 (MILP)...</p>
+                        <p className="text-sm text-slate-400 animate-pulse">正在获取 {selectedPlanDate} 分时电价库参数...</p>
+                      </div>
+                      <div className="w-64 h-1 bg-[#051210] rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-[#00DFA2] to-blue-500 w-full animate-[progress_2s_ease-in-out_infinite] origin-left"></div>
+                      </div>
+                    </div>
+                  )}
+
+                  {smartPlanState === 'result' && (
+                    <div className="space-y-6">
+                      {/* Alert Info */}
+                      <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 flex items-start gap-3">
+                        <CheckCircle2 size={18} className="text-amber-500 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-sm text-amber-500 font-bold">规划完成！预计当日套利收益：<span className="text-lg">￥ 428.50</span></p>
+                          <p className="text-xs text-amber-500/70 mt-1">基于两充两放策略，避开尖峰电价，优先在谷段充电。已考虑 SOC 上下限约束。</p>
+                        </div>
+                      </div>
+
+                      {/* Chart Area */}
+                      <div className="bg-[#051210] border border-[#153B34] rounded-xl p-4">
+                        <h4 className="text-xs font-bold text-slate-300 mb-3 flex justify-between items-center">
+                          <span>策略与电价叠加图</span>
+                          <div className="flex gap-3">
+                            <span className="flex items-center gap-1 text-[#00DFA2]"><Square size={10} fill="currentColor"/> 充电 (谷)</span>
+                            <span className="flex items-center gap-1 text-red-400"><Square size={10} fill="currentColor"/> 放电 (峰)</span>
+                            <span className="flex items-center gap-1 text-blue-400"><LineChart size={10} /> 电价走势</span>
+                          </div>
+                        </h4>
+                        <div className="h-40 relative">
+                           <svg viewBox="0 0 600 150" className="w-full h-full" preserveAspectRatio="none">
+                             <line x1="0" y1="25" x2="600" y2="25" stroke="#153B34" strokeWidth="1" strokeDasharray="4" />
+                             <line x1="0" y1="75" x2="600" y2="75" stroke="#153B34" strokeWidth="1" /> {/* Zero */}
+                             <line x1="0" y1="125" x2="600" y2="125" stroke="#153B34" strokeWidth="1" strokeDasharray="4" />
+                             
+                             {/* Bars for Charge (green, up) and Discharge (red, down) */}
+                             {/* 00:00-08:00 (0-200px) Charge */}
+                             <rect x="0" y="25" width="200" height="50" fill="rgba(0, 223, 162, 0.4)" stroke="#00DFA2" strokeWidth="1" />
+                             {/* 08:00-11:00 (200-275px) Discharge */}
+                             <rect x="200" y="75" width="75" height="50" fill="rgba(248, 113, 113, 0.4)" stroke="#f87171" strokeWidth="1" />
+                             {/* 11:00-13:00 (275-325px) Charge */}
+                             <rect x="275" y="25" width="50" height="50" fill="rgba(0, 223, 162, 0.4)" stroke="#00DFA2" strokeWidth="1" />
+                             {/* 15:00-22:00 (375-550px) Discharge */}
+                             <rect x="375" y="75" width="175" height="50" fill="rgba(248, 113, 113, 0.4)" stroke="#f87171" strokeWidth="1" />
+
+                             {/* Price Curve */}
+                             <polyline 
+                               points="0,110 200,110 200,40 275,40 275,80 325,80 325,20 375,20 375,40 550,40 550,80 600,80" 
+                               fill="none" stroke="#3B82F6" strokeWidth="2" 
+                             />
+                           </svg>
+                           <div className="absolute bottom-[-15px] left-0 right-0 flex justify-between text-[10px] text-slate-500">
+                             <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span>
+                           </div>
+                        </div>
+                      </div>
+
+                      {/* List Area */}
+                      <div className="border border-[#153B34] rounded-xl overflow-hidden">
+                        <table className="w-full text-xs text-left">
+                          <thead className="text-slate-500 bg-[#051210] uppercase">
+                            <tr>
+                              <th className="px-4 py-2 border-b border-[#153B34]">时段</th>
+                              <th className="px-4 py-2 border-b border-[#153B34]">对应电价</th>
+                              <th className="px-4 py-2 border-b border-[#153B34]">策略动作</th>
+                              <th className="px-4 py-2 border-b border-[#153B34]">推荐功率</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-[#153B34] bg-[#081714]">
+                            <tr className="hover:bg-[#0C221E]">
+                              <td className="px-4 py-2 font-mono">00:00 - 08:00</td>
+                              <td className="px-4 py-2 text-blue-400">0.32 (谷)</td>
+                              <td className="px-4 py-2"><span className="text-[#00DFA2] border border-[#00DFA2]/30 px-2 py-0.5 rounded">满功率充电</span></td>
+                              <td className="px-4 py-2 text-[#00DFA2] font-bold">+ 80.0 kW</td>
+                            </tr>
+                            <tr className="hover:bg-[#0C221E]">
+                              <td className="px-4 py-2 font-mono">08:00 - 11:00</td>
+                              <td className="px-4 py-2 text-amber-500">1.15 (高峰)</td>
+                              <td className="px-4 py-2"><span className="text-red-400 border border-red-400/30 px-2 py-0.5 rounded">满功率放电</span></td>
+                              <td className="px-4 py-2 text-red-400 font-bold">- 80.0 kW</td>
+                            </tr>
+                            <tr className="hover:bg-[#0C221E]">
+                              <td className="px-4 py-2 font-mono">11:00 - 13:00</td>
+                              <td className="px-4 py-2 text-[#00DFA2]">0.68 (平段)</td>
+                              <td className="px-4 py-2"><span className="text-[#00DFA2] border border-[#00DFA2]/30 px-2 py-0.5 rounded">补电充电</span></td>
+                              <td className="px-4 py-2 text-[#00DFA2] font-bold">+ 80.0 kW</td>
+                            </tr>
+                            <tr className="hover:bg-[#0C221E]">
+                              <td className="px-4 py-2 font-mono">15:00 - 22:00</td>
+                              <td className="px-4 py-2 text-red-400">1.45 (尖峰)</td>
+                              <td className="px-4 py-2"><span className="text-red-400 border border-red-400/30 px-2 py-0.5 rounded">满功率放电</span></td>
+                              <td className="px-4 py-2 text-red-400 font-bold">- 80.0 kW</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Modal Footer */}
+                {smartPlanState === 'result' && (
+                  <div className="border-t border-[#153B34] px-6 py-4 bg-[#051210]/50 flex justify-end gap-3">
+                    <button 
+                      onClick={() => setShowSmartPlanModal(false)} 
+                      className="px-5 py-2 text-sm text-slate-300 hover:text-white transition-colors"
+                    >
+                      取消
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setShowSmartPlanModal(false);
+                        // Simulate applying data back to parent
+                      }}
+                      className="px-6 py-2 text-sm bg-gradient-to-r from-[#00DFA2] to-[#10B981] text-[#051210] font-bold rounded-lg shadow-lg hover:brightness-110 transition-all flex items-center gap-2"
+                    >
+                      <Save size={16} /> 应用至当前模板
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+        </main>
+      </div>
+    </div>
+  );
+};
+
+/* --- Sub Components --- */
+
+const NavItem = ({ icon, label, badge, active, className, onClick }) => (
+  <div onClick={onClick} className={`flex items-center justify-between px-3 py-2.5 mb-1 rounded-lg cursor-pointer transition-all duration-200 group ${active ? 'bg-gradient-to-r from-[#10B981]/20 to-transparent border-l-2 border-[#00DFA2] text-white shadow-inner' : `text-slate-400 hover:bg-[#0C221E] hover:text-slate-200 ${className || ''}`}`}>
+    <div className="flex items-center gap-3">
+      <span className={`${active ? 'text-[#00DFA2]' : 'text-slate-500 group-hover:text-slate-400'}`}>{icon}</span>
+      <span className="text-sm font-medium">{label}</span>
+    </div>
+    {badge && <span className="bg-red-500/20 text-red-400 text-[10px] px-2 py-0.5 rounded-full border border-red-500/30">{badge}</span>}
+  </div>
+);
+
+const TabButton = ({ active, icon, label, onClick, theme = 'green' }) => {
+  const activeClass = theme === 'green' 
+    ? 'bg-[#153B34] text-[#00DFA2] border-[#153B34] shadow-sm' 
+    : 'bg-blue-900/40 text-blue-400 border-blue-500/30 shadow-sm';
+  
+  return (
+    <button onClick={onClick} className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${active ? activeClass : 'text-slate-400 hover:text-slate-200 hover:bg-[#081714] border border-transparent'}`}>
+      {icon} {label}
+    </button>
+  );
+};
+
+const FormInput = ({ label, defaultValue, hint }) => (
+  <div>
+    <label className="block text-xs text-slate-400 mb-1">{label}</label>
+    <div className="flex gap-2 relative">
+      <input type="number" defaultValue={defaultValue} className="flex-1 bg-[#081714] border border-[#153B34] rounded text-white px-3 py-1.5 text-sm focus:border-[#00DFA2] focus:outline-none" />
+      {hint && <span className="flex items-center text-[10px] text-slate-500 absolute right-3 top-2">{hint}</span>}
+    </div>
+  </div>
+);
+
+const SyncStatusItem = ({ label, status, time }) => (
+  <div className="flex items-center justify-between bg-[#051210] p-3 rounded border border-[#153B34]">
+    <span className="text-xs text-slate-300">{label}</span>
+    <div className="flex items-center gap-3">
+      <span className="text-[10px] text-slate-500">{time}</span>
+      <span className="text-xs text-[#00DFA2] flex items-center gap-1"><CheckCircle2 size={12}/> {status}</span>
+    </div>
+  </div>
+);
+
+const TableRow = ({ start, end, power, status, type }) => {
+  const getStatusColor = (t) => {
+    switch(t) {
+      case 'charge': return 'text-[#00DFA2] bg-[#00DFA2]/10 border-[#00DFA2]/30';
+      case 'discharge': return 'text-amber-400 bg-amber-400/10 border-amber-400/30';
+      default: return 'text-slate-400 bg-slate-800 border-slate-700';
+    }
+  };
+
+  return (
+    <tr className="hover:bg-[#081714]/80 transition-colors">
+      <td className="px-4 py-2 border-b border-[#153B34]/50">{start}</td>
+      <td className="px-4 py-2 border-b border-[#153B34]/50">{end}</td>
+      <td className={`px-4 py-2 border-b border-[#153B34]/50 font-mono ${parseFloat(power) > 0 ? 'text-[#00DFA2]' : parseFloat(power) < 0 ? 'text-amber-400' : 'text-slate-500'}`}>{power}</td>
+      <td className="px-4 py-2 border-b border-[#153B34]/50"><span className={`px-2 py-0.5 rounded text-[10px] border ${getStatusColor(type)}`}>{status}</span></td>
+      <td className="px-4 py-2 border-b border-[#153B34]/50 text-right">
+        <button className="text-slate-500 hover:text-white p-1"><Edit3 size={14}/></button>
+        <button className="text-slate-500 hover:text-red-400 p-1 ml-1"><Trash2 size={14}/></button>
+      </td>
+    </tr>
+  );
+};
+
+const PriceRow = ({ start, end, type, price, colorClass }) => {
+  return (
+    <tr className="hover:bg-[#081714]/80 transition-colors">
+      <td className="px-4 py-2">{start}</td>
+      <td className="px-4 py-2">{end}</td>
+      <td className="px-4 py-2">
+        <span className={`px-2 py-0.5 rounded text-[10px] border ${colorClass} border-current/20 font-bold`}>{type}</span>
+      </td>
+      <td className="px-4 py-2 font-mono text-slate-200">
+        <div className="flex items-center gap-2">
+          <span className="text-slate-500">￥</span>
+          <input type="text" defaultValue={price} className="bg-transparent border-b border-[#153B34] w-16 focus:outline-none focus:border-blue-400" />
+        </div>
+      </td>
+      <td className="px-4 py-2 text-right">
+        <button className="text-slate-500 hover:text-blue-400 p-1 transition-colors"><Trash2 size={14}/></button>
+      </td>
+    </tr>
+  );
+}
+
+export default App;
